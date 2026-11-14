@@ -1,0 +1,33 @@
+# --- Dependencies ---
+node_modules/
+
+# --- Build output ---
+dist/
+out/
+*.vsix
+
+# --- VS Code test artifacts ---
+.vscode-test/
+.vscode-test-web/
+
+# --- Logs & debug ---
+*.log
+logs/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editors ---
+.idea/
+*.swp
+*.swo
+
+# --- Environment & secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Local tool caches (downloaded tools land here at runtime) ---
+.reapk/

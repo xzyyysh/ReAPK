@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- ReAPK icon: hammer on transparent background -->
+  <g transform="rotate(-45 64 64)">
+    <!-- handle -->
+    <rect x="57" y="40" width="14" height="76" rx="6" fill="#b45309"/>
+    <rect x="57" y="40" width="6" height="76" rx="3" fill="#d97706" opacity="0.55"/>
+    <!-- grip -->
+    <rect x="55" y="100" width="18" height="16" rx="6" fill="#78350f"/>
+    <!-- head -->
+    <rect x="30" y="18" width="68" height="28" rx="8" fill="#475569"/>
+    <!-- striking faces -->
+    <rect x="30" y="18" width="12" height="28" rx="6" fill="#334155"/>
+    <rect x="86" y="18" width="12" height="28" rx="6" fill="#334155"/>
+    <!-- top highlight -->
+    <rect x="42" y="22" width="44" height="5" rx="2.5" fill="#94a3b8" opacity="0.8"/>
+  </g>
+</svg>

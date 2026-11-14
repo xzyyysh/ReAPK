@@ -1,0 +1,298 @@
+{
+    "name": "reapk",
+    "displayName": "ReAPK",
+    "description": "Android Reverse-Engineering Workbench",
+    "publisher": "Surendrajat",
+    "version": "2.0.0",
+    "license": "SEE LICENSE IN LICENSE",
+    "icon": "assets/icon.png",
+    "engines": {
+        "vscode": "^1.91.0"
+    },
+    "extensionDependencies": [],
+    "categories": [
+        "Programming Languages",
+        "Other"
+    ],
+    "keywords": [
+        "bytecode",
+        "disassembler",
+        "decompiler",
+        "re",
+        "android",
+        "apktool",
+        "jadx",
+        "apksigner",
+        "apk",
+        "reverse engineering",
+        "analysis",
+        "apk editor",
+        "smali",
+        "dalvik"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./dist/extension",
+    "contributes": {
+        "languages": [
+            {
+                "id": "smali",
+                "aliases": [
+                    "Smali",
+                    "smali"
+                ],
+                "extensions": [
+                    ".smali"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "smali",
+                "scopeName": "source.smali",
+                "path": "./syntaxes/smali.tmLanguage.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "reapk.openApkFile",
+                "title": "ReAPK: Open an APK"
+            },
+            {
+                "command": "reapk.rebuildApkFile",
+                "title": "ReAPK: Rebuild the APK"
+            },
+            {
+                "command": "reapk.patchApkForHttps",
+                "title": "ReAPK: Prepare for HTTPS inspection"
+            },
+            {
+                "command": "reapk.installApkFile",
+                "title": "ReAPK: Install the APK"
+            },
+            {
+                "command": "reapk.rebuildAndInstallApkFile",
+                "title": "ReAPK: Rebuild and Install the APK"
+            },
+            {
+                "command": "reapk.emptyFrameworkDir",
+                "title": "ReAPK: Empty ApkTool Framework Dir"
+            },
+            {
+                "command": "reapk.updateTools",
+                "title": "ReAPK: Update Tools"
+            },
+            {
+                "command": "reapk.generateFridaHook",
+                "title": "ReAPK: Generate Frida Hook"
+            },
+            {
+                "command": "reapk.injectFridaGadget",
+                "title": "ReAPK: Inject Frida Gadget"
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "reapk.rebuildApkFile",
+                    "when": "false"
+                },
+                {
+                    "command": "reapk.installApkFile",
+                    "when": "false"
+                },
+                {
+                    "command": "reapk.rebuildAndInstallApkFile",
+                    "when": "false"
+                },
+                {
+                    "command": "reapk.patchApkForHttps",
+                    "when": "false"
+                },
+                {
+                    "command": "reapk.generateFridaHook",
+                    "when": "false"
+                },
+                {
+                    "command": "reapk.injectFridaGadget",
+                    "when": "false"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "reapk.rebuildApkFile",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                },
+                {
+                    "command": "reapk.rebuildAndInstallApkFile",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                },
+                {
+                    "command": "reapk.patchApkForHttps",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                },
+                {
+                    "command": "reapk.generateFridaHook",
+                    "when": "resourceLangId == smali",
+                    "group": "1_modification"
+                },
+                {
+                    "command": "reapk.injectFridaGadget",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                }
+            ],
+            "editor/title": [
+                {
+                    "command": "reapk.rebuildApkFile",
+                    "when": "resourceFilename == apktool.yml"
+                },
+                {
+                    "command": "reapk.rebuildAndInstallApkFile",
+                    "when": "resourceFilename == apktool.yml"
+                },
+                {
+                    "command": "reapk.patchApkForHttps",
+                    "when": "resourceFilename == apktool.yml"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "reapk.installApkFile",
+                    "when": "resourceExtname == .apk",
+                    "group": "navigation"
+                },
+                {
+                    "command": "reapk.rebuildApkFile",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                },
+                {
+                    "command": "reapk.rebuildAndInstallApkFile",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                },
+                {
+                    "command": "reapk.patchApkForHttps",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                },
+                {
+                    "command": "reapk.injectFridaGadget",
+                    "when": "resourceFilename == apktool.yml",
+                    "group": "navigation"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "ReAPK",
+            "properties": {
+                "reapk.apktoolPath": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the absolute path of `apktool.jar` here if you want to use a non-latest version."
+                },
+                "reapk.apkSignerPath": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the absolute path of `uber-apk-signer.jar` here if you want to use a non-latest version."
+                },
+                "reapk.jadxDirPath": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the absolute path of `jadx-x.y.z` dir here if you want to use a non-latest version."
+                },
+                "reapk.updateTools": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Whether ReAPK should check for tools (for reapk, jadx...) update and show a notification."
+                },
+                "reapk.keystorePath": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the absolute path of your **Java keystore**(`.jks` or `.keystore`) file here."
+                },
+                "reapk.keystorePassword": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the **password** of your keystore here."
+                },
+                "reapk.keyAlias": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the **alias** of the used key in the keystore here."
+                },
+                "reapk.keyPassword": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the **password** of the used key in the keystore here."
+                },
+                "reapk.initProjectDirAsGit": {
+                    "type": "boolean",
+                    "default": "false",
+                    "markdownDescription": "Initialize project output directory as **Git** repository."
+                },
+                "reapk.smaliLspPath": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Put the absolute path of `smali-lsp.jar` here if you want to use a non-latest version."
+                },
+                "reapk.javaPath": {
+                    "type": "string",
+                    "default": "java",
+                    "markdownDescription": "Path to the **Java** executable (requires Java 17+)."
+                },
+                "smaliLsp.trace.server": {
+                    "type": "string",
+                    "enum": [
+                        "off",
+                        "messages",
+                        "verbose"
+                    ],
+                    "default": "off",
+                    "markdownDescription": "Traces the communication between VS Code and the Smali Language Server."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "lint": "eslint src && prettier --check .",
+        "fix": "prettier --write . && eslint src --fix",
+        "clean": "rm -rf out dist",
+        "pretest": "tsc -p ./",
+        "test": "node ./out/test/runTest.js",
+        "watch": "node esbuild.config.mjs --watch",
+        "vscode:prepublish": "yarn clean && node esbuild.config.mjs --production",
+        "package": "vsce package --yarn"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/cross-spawn": "^6.0.6",
+        "@types/listr": "^0.14.10",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^24",
+        "@types/vscode": "~1.91.0",
+        "@vscode/test-electron": "^3.0.0",
+        "@vscode/vsce": "^3.9.2",
+        "esbuild": "^0.28.1",
+        "eslint": "^10.7.0",
+        "eslint-config-prettier": "^10.1.8",
+        "glob": "^13.0.6",
+        "mocha": "^11.7.6",
+        "prettier": "^3.9.5",
+        "typescript": "^6.0.2",
+        "typescript-eslint": "^8.64.0"
+    },
+    "dependencies": {
+        "adm-zip": "^0.6.0",
+        "apk-mitm": "^1.3.0",
+        "cross-spawn": "^7.0.6",
+        "https-proxy-agent": "^9.1.0",
+        "vscode-languageclient": "^10.1.0"
+    }
+}
