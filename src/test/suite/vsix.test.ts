@@ -454,7 +454,7 @@ function createExtensionContext() {
     globalStoragePath: "/tmp/global-storage",
     logPath: "/tmp/logs",
     extension: {
-      id: "Surendrajat.reapk",
+      id: "xzyyysh.reapk",
       extensionPath: __dirname,
       isActive: true,
       packageJSON: {},

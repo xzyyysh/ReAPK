@@ -3,36 +3,36 @@ import eslintConfigPrettier from "eslint-config-prettier/flat";
 import tseslint from "typescript-eslint";
 
 export default [
-    {
-        ignores: [
-            "**/dist/**",
-            "**/coverage/**",
-            "**/node_modules/**",
-            "**/out/**",
-            "testdata/**",
-            ".vscode-test/**",
-        ],
+  {
+    ignores: [
+      "**/dist/**",
+      "**/coverage/**",
+      "**/node_modules/**",
+      "**/out/**",
+      "testdata/**",
+      ".vscode-test/**",
+    ],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
     },
-    js.configs.recommended,
-    ...tseslint.configs.strict,
-    ...tseslint.configs.stylistic,
-    {
-        languageOptions: {
-            parserOptions: {
-                projectService: true,
-            },
+    rules: {
+      "@typescript-eslint/no-namespace": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
         },
-        rules: {
-            "@typescript-eslint/no-namespace": "off",
-            "@typescript-eslint/no-unused-vars": [
-                "error",
-                {
-                    argsIgnorePattern: "^_",
-                    varsIgnorePattern: "^_",
-                    caughtErrorsIgnorePattern: "^_",
-                },
-            ],
-        },
+      ],
     },
-    eslintConfigPrettier,
+  },
+  eslintConfigPrettier,
 ];

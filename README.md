@@ -21,12 +21,12 @@ ReAPK integrates apktool, jadx, uber-apk-signer, smali-lsp, apk-mitm and frida b
 
 Managed tools are downloaded automatically into `~/.reapk` on first use. Versions are resolved from each project's official GitHub releases.
 
-| Tool | Source |
-| --- | --- |
-| apktool | iBotPeaches/Apktool |
-| jadx | skylot/jadx |
+| Tool            | Source                     |
+| --------------- | -------------------------- |
+| apktool         | iBotPeaches/Apktool        |
+| jadx            | skylot/jadx                |
 | uber-apk-signer | patrickfav/uber-apk-signer |
-| smali-lsp | Surendrajat/smali-lsp |
+| smali-lsp       | Surendrajat/smali-lsp      |
 
 External tools are expected on the system PATH when you use the related features: java, adb, git, frida and node for apk-mitm.
 
@@ -42,17 +42,17 @@ Downloads honor the VS Code `http.proxy` setting or the `HTTPS_PROXY` environmen
 
 ## Commands
 
-| Command | Description |
-| --- | --- |
-| `ReAPK: Open an APK` | Decode an APK into a project directory |
-| `ReAPK: Rebuild the APK` | Rebuild an APK from `apktool.yml` |
-| `ReAPK: Rebuild and Install the APK` | Rebuild and install on a device |
-| `ReAPK: Install the APK` | Install an APK with adb |
-| `ReAPK: Prepare for HTTPS inspection` | Apply apk-mitm patches |
-| `ReAPK: Empty ApkTool Framework Dir` | Clean the apktool framework cache |
-| `ReAPK: Update Tools` | Reinstall or update managed tools |
-| `ReAPK: Generate Frida Hook` | Generate a hook from the current smali method |
-| `ReAPK: Inject Frida Gadget` | Inject a gadget library into the app |
+| Command                               | Description                                   |
+| ------------------------------------- | --------------------------------------------- |
+| `ReAPK: Open an APK`                  | Decode an APK into a project directory        |
+| `ReAPK: Rebuild the APK`              | Rebuild an APK from `apktool.yml`             |
+| `ReAPK: Rebuild and Install the APK`  | Rebuild and install on a device               |
+| `ReAPK: Install the APK`              | Install an APK with adb                       |
+| `ReAPK: Prepare for HTTPS inspection` | Apply apk-mitm patches                        |
+| `ReAPK: Empty ApkTool Framework Dir`  | Clean the apktool framework cache             |
+| `ReAPK: Update Tools`                 | Reinstall or update managed tools             |
+| `ReAPK: Generate Frida Hook`          | Generate a hook from the current smali method |
+| `ReAPK: Inject Frida Gadget`          | Inject a gadget library into the app          |
 
 ## Development
 
