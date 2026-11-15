@@ -7,6 +7,7 @@ import {
   copyDexFiles,
   copySplitDirs,
   findBaseDir,
+  hasPublicXml,
   isSplitDir,
   mergeProjectJson,
   setApkFileName,
@@ -204,7 +205,9 @@ export async function decodeBundleFn(
       );
       return undefined;
     }
-    const splitDirs = decodedDirs.filter((d) => d !== baseDir && isSplitDir(d));
+    const splitDirs = decodedDirs.filter(
+      (d) => d !== baseDir && hasPublicXml(d),
+    );
     mergeProjectJson(baseDir, splitDirs);
     for (const splitDir of splitDirs) {
       copyDexFiles(baseDir, splitDir);

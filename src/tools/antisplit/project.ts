@@ -52,6 +52,7 @@ export function isSplitDir(dir: string): boolean {
 }
 
 export function findBaseDir(dirs: string[]): string | null {
+  let base: string | null = null;
   for (const dir of dirs) {
     const text = readManifestText(dir);
     if (
@@ -60,10 +61,14 @@ export function findBaseDir(dirs: string[]): string | null {
       !/isFeatureSplit="true"/.test(text) &&
       !/\ssplit="[^"]*"/.test(text)
     ) {
-      return dir;
+      base = dir;
     }
   }
-  return null;
+  return base;
+}
+
+export function hasPublicXml(dir: string): boolean {
+  return fs.existsSync(path.join(dir, "res", "values", "public.xml"));
 }
 
 function deepMerge(target: Json, source: Json): void {

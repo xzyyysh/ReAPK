@@ -25,7 +25,12 @@ export async function decryptApkm(
   inputPath: string,
   outputPath: string,
 ): Promise<void> {
-  const sodium = await import("libsodium-wrappers-sumo");
+  const sodiumModule = await import("libsodium-wrappers-sumo");
+  const sodium =
+    "crypto_pwhash" in sodiumModule
+      ? sodiumModule
+      : ((sodiumModule as unknown as { default: typeof sodiumModule })
+          .default ?? sodiumModule);
   await sodium.ready;
   const data = fs.readFileSync(inputPath);
   let off = 1;
