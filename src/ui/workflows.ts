@@ -98,17 +98,29 @@ export namespace Workflows {
     }
     const mergedApk = await buildMergedApk(mergedDir, aapt);
     if (!mergedApk) {
+      window.showErrorMessage(
+        "ReAPK: Merged APK was not built. Check the output channel for details.",
+      );
       return;
     }
+    const bundleDir = path.dirname(bundlePath);
+    const bundleName = path.basename(bundlePath, path.extname(bundlePath));
+    let finalApkPath = path.join(bundleDir, path.basename(mergedApk));
+    let n = 2;
+    while (fs.existsSync(finalApkPath)) {
+      finalApkPath = path.join(bundleDir, `${bundleName}_${n}.apk`);
+      n++;
+    }
+    fs.renameSync(mergedApk, finalApkPath);
     fs.rmSync(mergedDir, { recursive: true, force: true });
     const projectDir = uniqueProjectDir(
-      path.join(
-        path.dirname(bundlePath),
-        `${path.basename(bundlePath, path.extname(bundlePath))}_src`,
-      ),
+      path.join(bundleDir, `${bundleName}_src`),
     );
-    await apktool.decodeAPK(mergedApk, projectDir, []);
+    await apktool.decodeAPK(finalApkPath, projectDir, []);
     if (!fs.existsSync(path.join(projectDir, "apktool.yml"))) {
+      window.showErrorMessage(
+        "ReAPK: Decoding the merged APK failed. Check the output channel for details.",
+      );
       return;
     }
     if (!process.env["TEST"]) {
