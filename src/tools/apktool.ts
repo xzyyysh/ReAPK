@@ -30,6 +30,27 @@ export namespace apktool {
       return "";
     }
   }
+  export async function installFramework(
+    apkFilePath: string,
+    frameDir: string,
+  ): Promise<void> {
+    const extensionConfig =
+      vscode.workspace.getConfiguration(extensionConfigName);
+    const apktoolPath = extensionConfig.get("apktoolPath");
+    if (!apktoolPath || !fs.existsSync(String(apktoolPath))) {
+      vscode.window.showErrorMessage(
+        "ReAPK: Apktool not found. Please check your configuration.",
+      );
+      return;
+    }
+    fs.mkdirSync(frameDir, { recursive: true });
+    await executeProcess({
+      name: "Installing framework",
+      report: `Installing ${path.basename(apkFilePath)} as split framework`,
+      command: getJavaPath(),
+      args: ["-jar", String(apktoolPath), "if", "-p", frameDir, apkFilePath],
+    });
+  }
   export async function decodeAPK(
     apkFilePath: string,
     projectDir: string,

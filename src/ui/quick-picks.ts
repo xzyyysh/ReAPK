@@ -19,6 +19,31 @@ const quickPickItems: Record<string, QuickPickItem[]> = {
       alwaysShow: true,
     },
   ],
+  antisplitQuickPickItems: [
+    {
+      label: "decode_sources",
+      detail: "Baksmali all dex files into smali dirs after merging",
+      alwaysShow: true,
+    },
+    {
+      label: "fix_dex_ids",
+      detail:
+        "Renumber colliding resource ids, write changed_ids.json and patch references in dex files",
+      alwaysShow: true,
+    },
+    {
+      label: "remove_property",
+      detail: "Remove <property> tags from the merged AndroidManifest",
+      description: "apktool",
+      alwaysShow: true,
+    },
+    {
+      label: "--no-assets",
+      detail: "Prevents copying of unknown asset files.",
+      description: "apktool",
+      alwaysShow: true,
+    },
+  ],
   decodeQuickPickItems: [
     {
       label: "decompile_java",

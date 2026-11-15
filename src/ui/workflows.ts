@@ -1,6 +1,13 @@
 import * as path from "path";
 import * as fs from "fs";
-import { commands, QuickPickItem, Uri, window, workspace } from "vscode";
+import {
+  commands,
+  ProgressLocation,
+  QuickPickItem,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
 import {
   APK_FILE_EXTENSION,
   extensionConfigName,
@@ -10,6 +17,7 @@ import { QuickPicks } from "./quick-picks";
 import { apktool } from "../tools/apktool";
 import { git } from "../tools/git";
 import { jadx } from "../tools/jadx";
+import { antisplit } from "../tools/antisplit";
 export namespace Workflows {
   export async function showArgsQuickPick(
     items: QuickPickItem[],
@@ -28,10 +36,17 @@ export namespace Workflows {
       canSelectFolders: false,
       filters: {
         APK: [APK_FILE_EXTENSION.substring(1)],
+        "Split bundle": ["apks", "xapk", "apkm"],
       },
       openLabel: "Select an APK file",
     });
     if (result && result.length === 1) {
+      const apkFilePath = result[0].fsPath;
+      const bundleExtension = path.extname(apkFilePath).toLowerCase();
+      if ([".apks", ".xapk", ".apkm"].includes(bundleExtension)) {
+        await Workflows.decodeSplitBundle(apkFilePath);
+        return;
+      }
       const quickPickItems = await showArgsQuickPick(
         QuickPicks.getQuickPickItems("decodeQuickPickItems"),
         "Additional features & Apktool/Jadx arguments",
@@ -55,7 +70,6 @@ export namespace Workflows {
           decompileJava = true;
           args.splice(decompileJavaIndex, 1);
         }
-        const apkFilePath = result[0].fsPath;
         let projectDir = path.join(
           path.dirname(apkFilePath),
           path.parse(apkFilePath).name,
@@ -84,6 +98,56 @@ export namespace Workflows {
       outputChannel.appendLine("ReAPK: no APK file was chosen");
     }
   }
+  export async function decodeSplitBundle(bundlePath: string): Promise<void> {
+    const quickPickItems = await showArgsQuickPick(
+      QuickPicks.getQuickPickItems("antisplitQuickPickItems"),
+      "Antisplit features & Apktool arguments",
+    );
+    if (!quickPickItems) {
+      return;
+    }
+    const labels = quickPickItems.map((item) => item.label);
+    const projectDir = await window.withProgress(
+      {
+        location: ProgressLocation.Notification,
+        title: "ReAPK",
+        cancellable: false,
+      },
+      async () =>
+        await antisplit.decodeBundle(bundlePath, {
+          decodeSources: labels.includes("decode_sources"),
+          fixDexIds: labels.includes("fix_dex_ids"),
+          removeProperties: labels.includes("remove_property"),
+          apktoolArgs: labels.filter((label) => label.startsWith("--")),
+        }),
+    );
+    if (!projectDir) {
+      window.showErrorMessage(
+        "ReAPK: Antisplit merge failed. Check the output channel for details.",
+      );
+      return;
+    }
+    const nextStep = await window.showQuickPick(
+      ["Build merged APK", "Open project folder"],
+      { placeHolder: "Antisplit merge completed", ignoreFocusOut: false },
+    );
+    if (nextStep === "Build merged APK") {
+      await Workflows.rebuildAPK(path.join(projectDir, "apktool.yml"));
+    }
+    const initializeGit = workspace
+      .getConfiguration(extensionConfigName)
+      .get("initProjectDirAsGit");
+    if (initializeGit)
+      await git.initGitDir(projectDir, "Initial ReAPK project");
+    if (!process.env["TEST"]) {
+      await commands.executeCommand(
+        "vscode.openFolder",
+        Uri.file(projectDir),
+        true,
+      );
+    }
+  }
+
   export async function rebuildAPK(apktoolYmlPath: string): Promise<void> {
     const quickPickItems = await showArgsQuickPick(
       QuickPicks.getQuickPickItems("rebuildQuickPickItems"),
