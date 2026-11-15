@@ -4,7 +4,7 @@
     "description": "Android Reverse-Engineering Workbench",
     "publisher": "Surendrajat",
     "version": "2.0.0",
-    "license": "SEE LICENSE IN LICENSE",
+    "license": "MIT",
     "icon": "assets/icon.png",
     "engines": {
         "vscode": "^1.91.0"
