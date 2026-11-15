@@ -18,6 +18,45 @@ export namespace Workflows {
     return picked?.label as "aapt1" | "aapt2" | undefined;
   }
 
+  export async function pickDecompileJava(): Promise<boolean> {
+    const picked = await window.showQuickPick(
+      QuickPicks.getQuickPickItems("decompileQuickPickItems"),
+      {
+        placeHolder: "Select decode mode",
+        canPickMany: false,
+        ignoreFocusOut: true,
+      },
+    );
+    return picked?.label.includes("Java") ?? false;
+  }
+
+  export async function decodeApkFlow(apkFilePath: string): Promise<void> {
+    const withJava = await pickDecompileJava();
+    const projectDir = uniqueProjectDir(
+      path.join(
+        path.dirname(apkFilePath),
+        `${path.parse(apkFilePath).name}_src`,
+      ),
+    );
+    await apktool.decodeAPK(apkFilePath, projectDir, []);
+    if (!fs.existsSync(path.join(projectDir, "apktool.yml"))) {
+      window.showErrorMessage(
+        "ReAPK: Decoding failed. Check the output channel for details.",
+      );
+      return;
+    }
+    if (withJava) {
+      await jadx.decompileAPK(apkFilePath, projectDir, []);
+    }
+    if (!process.env["TEST"]) {
+      await commands.executeCommand(
+        "vscode.openFolder",
+        Uri.file(projectDir),
+        true,
+      );
+    }
+  }
+
   export async function openApkFile(): Promise<void> {
     const result = await window.showOpenDialog({
       canSelectFolders: false,
@@ -34,17 +73,7 @@ export namespace Workflows {
         await Workflows.decodeSplitBundle(apkFilePath);
         return;
       }
-      const projectDir = uniqueProjectDir(
-        path.join(path.dirname(apkFilePath), path.parse(apkFilePath).name),
-      );
-      await apktool.decodeAPK(apkFilePath, projectDir, []);
-      if (!process.env["TEST"]) {
-        await commands.executeCommand(
-          "vscode.openFolder",
-          Uri.file(projectDir),
-          true,
-        );
-      }
+      await Workflows.decodeApkFlow(apkFilePath);
     } else {
       outputChannel.appendLine("ReAPK: no APK file was chosen");
     }
@@ -113,23 +142,7 @@ export namespace Workflows {
     }
     fs.renameSync(mergedApk, finalApkPath);
     fs.rmSync(mergedDir, { recursive: true, force: true });
-    const projectDir = uniqueProjectDir(
-      path.join(bundleDir, `${bundleName}_src`),
-    );
-    await apktool.decodeAPK(finalApkPath, projectDir, []);
-    if (!fs.existsSync(path.join(projectDir, "apktool.yml"))) {
-      window.showErrorMessage(
-        "ReAPK: Decoding the merged APK failed. Check the output channel for details.",
-      );
-      return;
-    }
-    if (!process.env["TEST"]) {
-      await commands.executeCommand(
-        "vscode.openFolder",
-        Uri.file(projectDir),
-        true,
-      );
-    }
+    await Workflows.decodeApkFlow(finalApkPath);
   }
 
   async function buildMergedApk(

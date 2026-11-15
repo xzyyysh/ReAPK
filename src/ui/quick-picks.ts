@@ -13,6 +13,18 @@ const quickPickItems: Record<string, QuickPickItem[]> = {
       alwaysShow: true,
     },
   ],
+  decompileQuickPickItems: [
+    {
+      label: "Smali + resources",
+      detail: "Decode smali and resources only",
+      alwaysShow: true,
+    },
+    {
+      label: "Smali + resources + Java (Jadx)",
+      detail: "Also decompile Java sources with Jadx (slower)",
+      alwaysShow: true,
+    },
+  ],
 };
 export namespace QuickPicks {
   export function getQuickPickItems(category: string): QuickPickItem[] {

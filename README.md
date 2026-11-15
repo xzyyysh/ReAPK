@@ -38,10 +38,10 @@ Downloads honor the VS Code `http.proxy` setting or the `HTTPS_PROXY` environmen
 
 1. Install the extension and open the command palette
 2. Run `ReAPK: Open an APK` and pick an APK, `.apks`, `.xapk` or `.apkm` file
-3. Split bundles are merged into one APK and decoded into `<name>_src` automatically
-4. Edit smali or Java sources in the generated project directory
-5. Right click `apktool.yml` and run `ReAPK: Rebuild the APK`, choosing aapt1 or aapt2
-6. Use `ReAPK: Decompile Java (Jadx)` on an APK file for Java sources
+3. Split bundles are merged into one APK (next to the bundle) and decoded into `<name>_src` automatically
+4. Pick the decode mode: smali only, or smali plus Java sources with Jadx
+5. Edit smali or Java sources in the generated project directory
+6. Right click `apktool.yml` and run `ReAPK: Rebuild the APK`, choosing aapt1 or aapt2
 
 ## Commands
 
