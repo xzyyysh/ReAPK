@@ -3,7 +3,7 @@
   "displayName": "ReAPK",
   "description": "Android Reverse-Engineering Workbench",
   "publisher": "xzyyysh",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "icon": "assets/icon.png",
   "engines": {
@@ -91,6 +91,10 @@
       {
         "command": "reapk.injectFridaGadget",
         "title": "ReAPK: Inject Frida Gadget"
+      },
+      {
+        "command": "reapk.decompileJava",
+        "title": "ReAPK: Decompile Java (Jadx)"
       }
     ],
     "menus": {
@@ -185,6 +189,11 @@
         {
           "command": "reapk.injectFridaGadget",
           "when": "resourceFilename == apktool.yml",
+          "group": "navigation"
+        },
+        {
+          "command": "reapk.decompileJava",
+          "when": "resourceExtname == .apk",
           "group": "navigation"
         }
       ]

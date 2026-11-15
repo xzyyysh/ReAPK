@@ -32,14 +32,16 @@ import {
   stripFalseDummyItems,
 } from "./dummy";
 import { decryptApkm, isApkmEncrypted } from "./apkm";
-import { decodeSources } from "./sources";
 
 export interface AntisplitOptions {
-  decodeSources: boolean;
   removeProperties: boolean;
   fixDexIds: boolean;
-  apktoolArgs: string[];
 }
+
+const DEFAULT_OPTIONS: AntisplitOptions = {
+  removeProperties: true,
+  fixDexIds: true,
+};
 
 const MARKER_TEXT = [
   "~".repeat(126),
@@ -129,13 +131,9 @@ function packageNameOf(dir: string): string {
   return "";
 }
 
-function pad(n: number): string {
-  return n.toString().padStart(2, "0");
-}
-
 export async function decodeBundleFn(
   bundlePath: string,
-  options: AntisplitOptions,
+  options: AntisplitOptions = DEFAULT_OPTIONS,
 ): Promise<string | undefined> {
   const bundleDir = path.dirname(bundlePath);
   const bundleName = path.basename(bundlePath, path.extname(bundlePath));
@@ -180,11 +178,7 @@ export async function decodeBundleFn(
     const frameDir = path.join(extractDir, "framework");
     for (const apkFile of apkFiles) {
       const outDir = path.join(extractDir, path.basename(apkFile, ".apk"));
-      const filtered = options.apktoolArgs.filter(
-        (a) => a !== "--no-res" && a !== "-r" && a !== "--no-src" && a !== "-s",
-      );
-      filtered.push("-s");
-      filtered.push("-p", frameDir);
+      const filtered = ["-s", "-p", frameDir];
       const { apktool } = await import("../apktool");
       await apktool.decodeAPK(apkFile, outDir, filtered);
       if (!fs.existsSync(path.join(outDir, "AndroidManifest.xml"))) {
@@ -299,25 +293,17 @@ export async function decodeBundleFn(
       );
     }
     copySplitDirs(baseDir, splitDirs, true);
-    if (options.decodeSources) {
-      await decodeSources(
-        baseDir,
-        frameDir,
-        decodedDirs.map((decodedDir) => ({
-          apkPath: path.join(extractDir, `${path.basename(decodedDir)}.apk`),
-          decodedDir,
-        })),
-      );
-    }
-    const now = new Date();
-    const outName = `out_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}_src`;
-    let finalDir = path.join(bundleDir, outName);
+    const mergedName = `${bundleName}_merged`;
+    let finalDir = path.join(bundleDir, mergedName);
     let n = 2;
     while (fs.existsSync(finalDir)) {
-      finalDir = path.join(bundleDir, `${outName}_${n}`);
+      finalDir = path.join(bundleDir, `${mergedName}_${n}`);
       n++;
     }
-    setApkFileName(baseDir, `${path.basename(finalDir)}.apk`);
+    setApkFileName(
+      baseDir,
+      `${path.basename(bundlePath, path.extname(bundlePath))}.apk`,
+    );
     fs.renameSync(baseDir, finalDir);
     if (decryptSucceeded) {
       fs.rmSync(apksPath);

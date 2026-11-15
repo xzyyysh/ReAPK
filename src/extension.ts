@@ -69,6 +69,13 @@ export function activate(context: vscode.ExtensionContext): void {
     "reapk.injectFridaGadget",
     (uri: vscode.Uri) => frida.injectGadget(uri),
   );
+  const decompileJavaCommand = vscode.commands.registerCommand(
+    "reapk.decompileJava",
+    async (uri: vscode.Uri) => {
+      await checkAndInstallTools();
+      await Workflows.decompileJava(uri);
+    },
+  );
   context.subscriptions.push(
     openApkFileCommand,
     rebuildAPkFileCommand,
@@ -79,6 +86,7 @@ export function activate(context: vscode.ExtensionContext): void {
     updateToolsCommand,
     generateFridaHookCommand,
     injectFridaGadgetCommand,
+    decompileJavaCommand,
   );
   smaliLsp.register(context);
   updateTools();

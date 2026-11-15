@@ -20,6 +20,7 @@ interface ToolSource {
   assetPattern: RegExp;
   configName: string;
   zipped: boolean;
+  pinned?: { url: string; fileName: string; version: string };
 }
 
 const TOOL_SOURCES: ToolSource[] = [
@@ -29,6 +30,11 @@ const TOOL_SOURCES: ToolSource[] = [
     assetPattern: /^apktool_[^/]*\.jar$/i,
     configName: "apktoolPath",
     zipped: false,
+    pinned: {
+      url: "https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar",
+      fileName: "apktool_2.9.3.jar",
+      version: "2.9.3",
+    },
   },
   {
     name: "smali-lsp",
@@ -112,6 +118,16 @@ function fetchLatestRelease(repo: string): Promise<GithubRelease | null> {
 }
 
 async function resolveTool(source: ToolSource): Promise<Tool | null> {
+  if (source.pinned) {
+    return {
+      name: source.name,
+      version: source.pinned.version,
+      downloadUrl: source.pinned.url,
+      fileName: source.pinned.fileName,
+      configName: source.configName,
+      zipped: source.zipped,
+    };
+  }
   const release = await fetchLatestRelease(source.repo);
   if (!release || !release.assets) {
     return null;

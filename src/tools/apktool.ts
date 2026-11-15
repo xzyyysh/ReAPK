@@ -96,6 +96,7 @@ export namespace apktool {
   export async function rebuildAPK(
     apktoolYmlPath: string,
     apktoolArgs: string[],
+    sign = true,
   ): Promise<void> {
     if (!apktoolYmlPath || !fs.existsSync(apktoolYmlPath)) {
       vscode.window.showErrorMessage(
@@ -137,7 +138,7 @@ export namespace apktool {
         canBeSigned = true;
       },
     });
-    if (canBeSigned) await apkSigner.signAPK(outputApkFilePath);
+    if (canBeSigned && sign) await apkSigner.signAPK(outputApkFilePath);
   }
   export async function emptyFrameworkDir(): Promise<void> {
     const extensionConfig =

@@ -1,100 +1,15 @@
 import { QuickPickItem } from "vscode";
 const quickPickItems: Record<string, QuickPickItem[]> = {
-  rebuildQuickPickItems: [
+  aaptQuickPickItems: [
     {
-      label: "--debuggable",
+      label: "aapt1",
+      detail: "Build resources with aapt1 (more tolerant, Apktool M default)",
+      alwaysShow: true,
+    },
+    {
+      label: "aapt2",
       detail:
-        'Build APK in Debug mode by adding debuggable="true" to AndroidManifest file',
-      alwaysShow: true,
-    },
-    {
-      label: "--force-all",
-      detail:
-        "Overwrites existing files during build, reassembling the resources.arsc file and dex file(s)",
-      alwaysShow: true,
-    },
-    {
-      label: "--no-crunch",
-      detail: "Disable crunching of resource files during the build step",
-      alwaysShow: true,
-    },
-  ],
-  antisplitQuickPickItems: [
-    {
-      label: "decode_sources",
-      detail: "Baksmali all dex files into smali dirs after merging",
-      alwaysShow: true,
-    },
-    {
-      label: "fix_dex_ids",
-      detail:
-        "Renumber colliding resource ids, write changed_ids.json and patch references in dex files",
-      alwaysShow: true,
-    },
-    {
-      label: "remove_property",
-      detail: "Remove <property> tags from the merged AndroidManifest",
-      description: "apktool",
-      alwaysShow: true,
-    },
-    {
-      label: "--no-assets",
-      detail: "Prevents copying of unknown asset files.",
-      description: "apktool",
-      alwaysShow: true,
-    },
-  ],
-  decodeQuickPickItems: [
-    {
-      label: "decompile_java",
-      detail: "Decompiles APK to Java source using Jadx",
-      description: "[Use Jadx]",
-    },
-    {
-      label: "--no-src",
-      detail: "Do not decompile dex to smali (-s)",
-      description: "apktool",
-      alwaysShow: true,
-    },
-    {
-      label: "--no-res",
-      detail: "Do not decompile resources (-r)",
-      description: "apktool",
-      alwaysShow: true,
-    },
-    {
-      label: "--force-manifest",
-      detail:
-        "Forces decode of AndroidManifest regardless of decoding of resources flag.",
-      description: "apktool",
-    },
-    {
-      label: "--no-assets",
-      detail: "Prevents decoding/copying of unknown asset files.",
-      description: "apktool",
-      alwaysShow: true,
-    },
-    {
-      label: "--all-src",
-      detail: "Disassemble all dex classes (default is only main classes)",
-      description: "apktool",
-    },
-    {
-      label: "--no-debug-info",
-      detail:
-        "Prevents baksmali from writing out debug info (.local, .param, .line, etc)",
-      description: "apktool",
-    },
-    {
-      label: "--deobf",
-      detail: "Activate deobfuscation",
-      description: "jadx",
-      alwaysShow: true,
-    },
-    {
-      label: "--show-bad-code",
-      detail: "Show inconsistent code (incorrectly decompiled)",
-      description: "jadx",
+        "Build resources with aapt2 (stricter, required by some modern APKs)",
       alwaysShow: true,
     },
   ],

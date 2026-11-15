@@ -1,24 +1,23 @@
 import * as path from "path";
 import * as fs from "fs";
-import { commands, ProgressLocation, QuickPickItem, Uri, window } from "vscode";
+import { commands, ProgressLocation, Uri, window } from "vscode";
 import { APK_FILE_EXTENSION, outputChannel } from "../core/constants";
 import { QuickPicks } from "./quick-picks";
 import { apktool } from "../tools/apktool";
 import { jadx } from "../tools/jadx";
 import { antisplit } from "../tools/antisplit";
 export namespace Workflows {
-  export async function showArgsQuickPick(
-    items: QuickPickItem[],
-    placeHolder: string,
-  ): Promise<QuickPickItem[] | undefined> {
-    return await window.showQuickPick(items, {
-      placeHolder: placeHolder,
-      canPickMany: true,
-      matchOnDetail: true,
-      matchOnDescription: true,
+  export async function pickAapt(): Promise<"aapt1" | "aapt2" | undefined> {
+    const items = QuickPicks.getQuickPickItems("aaptQuickPickItems");
+    QuickPicks.setQuickPickDefault("aaptQuickPickItems", "aapt1");
+    const picked = await window.showQuickPick(items, {
+      placeHolder: "Select aapt version for building resources",
+      canPickMany: false,
       ignoreFocusOut: true,
     });
+    return picked?.label as "aapt1" | "aapt2" | undefined;
   }
+
   export async function openApkFile(): Promise<void> {
     const result = await window.showOpenDialog({
       canSelectFolders: false,
@@ -35,87 +34,82 @@ export namespace Workflows {
         await Workflows.decodeSplitBundle(apkFilePath);
         return;
       }
-      const quickPickItems = await showArgsQuickPick(
-        QuickPicks.getQuickPickItems("decodeQuickPickItems"),
-        "Additional features & Apktool/Jadx arguments",
+      const projectDir = uniqueProjectDir(
+        path.join(path.dirname(apkFilePath), path.parse(apkFilePath).name),
       );
-      if (quickPickItems) {
-        const args = quickPickItems.map<string>((item) => item.label);
-        const argDescriptions = quickPickItems.map<string | undefined>(
-          (item) => item.description,
+      await apktool.decodeAPK(apkFilePath, projectDir, []);
+      if (!process.env["TEST"]) {
+        await commands.executeCommand(
+          "vscode.openFolder",
+          Uri.file(projectDir),
+          true,
         );
-        const decompileJavaIndex = argDescriptions.indexOf("[Use Jadx]");
-        const jadxOptionsIndex = argDescriptions.indexOf("jadx");
-        const jadxOptionsNumber = argDescriptions.filter(
-          (item) => item === "jadx",
-        ).length;
-        let decompileJava = false;
-        let jadxArgs: string[] = [];
-        if (jadxOptionsIndex !== -1) {
-          jadxArgs = args.splice(jadxOptionsIndex, jadxOptionsNumber);
-        }
-        if (decompileJavaIndex !== -1) {
-          decompileJava = true;
-          args.splice(decompileJavaIndex, 1);
-        }
-        let projectDir = path.join(
-          path.dirname(apkFilePath),
-          path.parse(apkFilePath).name,
-        );
-        while (fs.existsSync(projectDir)) {
-          projectDir = projectDir + "1";
-        }
-        await apktool.decodeAPK(apkFilePath, projectDir, args);
-        if (decompileJava) {
-          await jadx.decompileAPK(apkFilePath, projectDir, jadxArgs);
-        }
-        if (!process.env["TEST"]) {
-          await commands.executeCommand(
-            "vscode.openFolder",
-            Uri.file(projectDir),
-            true,
-          );
-        }
       }
     } else {
       outputChannel.appendLine("ReAPK: no APK file was chosen");
     }
   }
-  export async function decodeSplitBundle(bundlePath: string): Promise<void> {
-    const quickPickItems = await showArgsQuickPick(
-      QuickPicks.getQuickPickItems("antisplitQuickPickItems"),
-      "Antisplit features & Apktool arguments",
-    );
-    if (!quickPickItems) {
-      return;
+
+  function uniqueProjectDir(base: string): string {
+    let projectDir = base;
+    while (fs.existsSync(projectDir)) {
+      projectDir = projectDir + "1";
     }
-    const labels = quickPickItems.map((item) => item.label);
-    const projectDir = await window.withProgress(
+    return projectDir;
+  }
+
+  export async function decompileJava(apkFilePath?: Uri): Promise<void> {
+    let apk = apkFilePath?.fsPath;
+    if (!apk) {
+      const picked = await window.showOpenDialog({
+        canSelectFolders: false,
+        filters: { APK: [APK_FILE_EXTENSION.substring(1)] },
+        openLabel: "Select an APK file",
+      });
+      if (!picked || picked.length !== 1) {
+        return;
+      }
+      apk = picked[0].fsPath;
+    }
+    const projectDir = uniqueProjectDir(
+      path.join(path.dirname(apk), `${path.parse(apk).name}_java`),
+    );
+    await jadx.decompileAPK(apk, projectDir, []);
+  }
+
+  export async function decodeSplitBundle(bundlePath: string): Promise<void> {
+    const mergedDir = await window.withProgress(
       {
         location: ProgressLocation.Notification,
         title: "ReAPK",
         cancellable: false,
       },
-      async () =>
-        await antisplit.decodeBundle(bundlePath, {
-          decodeSources: labels.includes("decode_sources"),
-          fixDexIds: labels.includes("fix_dex_ids"),
-          removeProperties: labels.includes("remove_property"),
-          apktoolArgs: labels.filter((label) => label.startsWith("--")),
-        }),
+      async () => await antisplit.decodeBundle(bundlePath),
     );
-    if (!projectDir) {
+    if (!mergedDir) {
       window.showErrorMessage(
         "ReAPK: Antisplit merge failed. Check the output channel for details.",
       );
       return;
     }
-    const nextStep = await window.showQuickPick(
-      ["Build merged APK", "Open project folder"],
-      { placeHolder: "Antisplit merge completed", ignoreFocusOut: false },
+    const aapt = await pickAapt();
+    if (!aapt) {
+      return;
+    }
+    const mergedApk = await buildMergedApk(mergedDir, aapt);
+    if (!mergedApk) {
+      return;
+    }
+    fs.rmSync(mergedDir, { recursive: true, force: true });
+    const projectDir = uniqueProjectDir(
+      path.join(
+        path.dirname(bundlePath),
+        `${path.basename(bundlePath, path.extname(bundlePath))}_src`,
+      ),
     );
-    if (nextStep === "Build merged APK") {
-      await Workflows.rebuildAPK(path.join(projectDir, "apktool.yml"));
+    await apktool.decodeAPK(mergedApk, projectDir, []);
+    if (!fs.existsSync(path.join(projectDir, "apktool.yml"))) {
+      return;
     }
     if (!process.env["TEST"]) {
       await commands.executeCommand(
@@ -126,16 +120,38 @@ export namespace Workflows {
     }
   }
 
-  export async function rebuildAPK(apktoolYmlPath: string): Promise<void> {
-    const quickPickItems = await showArgsQuickPick(
-      QuickPicks.getQuickPickItems("rebuildQuickPickItems"),
-      "Additional Apktool arguments",
-    );
-    const args = quickPickItems
-      ? quickPickItems.map<string>((item) => item.label)
-      : undefined;
-    if (args) {
-      await apktool.rebuildAPK(apktoolYmlPath, args);
+  async function buildMergedApk(
+    mergedDir: string,
+    aapt: "aapt1" | "aapt2",
+  ): Promise<string | undefined> {
+    const ymlPath = path.join(mergedDir, "apktool.yml");
+    const apkFileName = apktool.getApkNameFromApkToolYaml(ymlPath);
+    if (!apkFileName) {
+      window.showErrorMessage(
+        "ReAPK: Could not determine merged APK filename from apktool.yml",
+      );
+      return undefined;
     }
+    const outputApkFilePath = path.join(mergedDir, "dist", apkFileName);
+    await apktool.rebuildAPK(
+      ymlPath,
+      aapt === "aapt1" ? ["--use-aapt1"] : [],
+      false,
+    );
+    if (!fs.existsSync(outputApkFilePath)) {
+      return undefined;
+    }
+    return outputApkFilePath;
+  }
+
+  export async function rebuildAPK(apktoolYmlPath: string): Promise<void> {
+    const aapt = await pickAapt();
+    if (!aapt) {
+      return;
+    }
+    await apktool.rebuildAPK(
+      apktoolYmlPath,
+      aapt === "aapt1" ? ["--use-aapt1"] : [],
+    );
   }
 }

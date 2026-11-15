@@ -28,17 +28,20 @@ Managed tools are downloaded automatically into `~/.reapk` on first use. Version
 | uber-apk-signer | patrickfav/uber-apk-signer |
 | smali-lsp       | Surendrajat/smali-lsp      |
 
-External tools are expected on the system PATH when you use the related features: java, adb, git, frida and node for apk-mitm.
+External tools are expected on the system PATH when you use the related features: java, adb, frida and node for apk-mitm.
+
+Apktool is pinned to 2.9.3 because ReAPK builds with aapt1 by default (aapt1 support was removed in apktool 3.x).
 
 Downloads honor the VS Code `http.proxy` setting or the `HTTPS_PROXY` environment variable.
 
 ## Usage
 
 1. Install the extension and open the command palette
-2. Run `ReAPK: Open an APK` and pick an APK file
-3. Choose decode options in the QuickPick, for example `decompile_java`
+2. Run `ReAPK: Open an APK` and pick an APK, `.apks`, `.xapk` or `.apkm` file
+3. Split bundles are merged into one APK and decoded into `<name>_src` automatically
 4. Edit smali or Java sources in the generated project directory
-5. Right click `apktool.yml` and run `ReAPK: Rebuild the APK`
+5. Right click `apktool.yml` and run `ReAPK: Rebuild the APK`, choosing aapt1 or aapt2
+6. Use `ReAPK: Decompile Java (Jadx)` on an APK file for Java sources
 
 ## Commands
 
@@ -53,6 +56,7 @@ Downloads honor the VS Code `http.proxy` setting or the `HTTPS_PROXY` environmen
 | `ReAPK: Update Tools`                 | Reinstall or update managed tools             |
 | `ReAPK: Generate Frida Hook`          | Generate a hook from the current smali method |
 | `ReAPK: Inject Frida Gadget`          | Inject a gadget library into the app          |
+| `ReAPK: Decompile Java (Jadx)`        | Decompile an APK to Java with Jadx            |
 
 ## Development
 
