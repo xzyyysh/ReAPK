@@ -1,21 +1,9 @@
 import * as path from "path";
 import * as fs from "fs";
-import {
-  commands,
-  ProgressLocation,
-  QuickPickItem,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
-import {
-  APK_FILE_EXTENSION,
-  extensionConfigName,
-  outputChannel,
-} from "../core/constants";
+import { commands, ProgressLocation, QuickPickItem, Uri, window } from "vscode";
+import { APK_FILE_EXTENSION, outputChannel } from "../core/constants";
 import { QuickPicks } from "./quick-picks";
 import { apktool } from "../tools/apktool";
-import { git } from "../tools/git";
 import { jadx } from "../tools/jadx";
 import { antisplit } from "../tools/antisplit";
 export namespace Workflows {
@@ -81,11 +69,6 @@ export namespace Workflows {
         if (decompileJava) {
           await jadx.decompileAPK(apkFilePath, projectDir, jadxArgs);
         }
-        const initializeGit = workspace
-          .getConfiguration(extensionConfigName)
-          .get("initProjectDirAsGit");
-        if (initializeGit)
-          await git.initGitDir(projectDir, "Initial ReAPK project");
         if (!process.env["TEST"]) {
           await commands.executeCommand(
             "vscode.openFolder",
@@ -134,11 +117,6 @@ export namespace Workflows {
     if (nextStep === "Build merged APK") {
       await Workflows.rebuildAPK(path.join(projectDir, "apktool.yml"));
     }
-    const initializeGit = workspace
-      .getConfiguration(extensionConfigName)
-      .get("initProjectDirAsGit");
-    if (initializeGit)
-      await git.initGitDir(projectDir, "Initial ReAPK project");
     if (!process.env["TEST"]) {
       await commands.executeCommand(
         "vscode.openFolder",

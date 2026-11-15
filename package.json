@@ -232,11 +232,6 @@
                     "default": "",
                     "markdownDescription": "Put the **password** of the used key in the keystore here."
                 },
-                "reapk.initProjectDirAsGit": {
-                    "type": "boolean",
-                    "default": "false",
-                    "markdownDescription": "Initialize project output directory as **Git** repository."
-                },
                 "reapk.smaliLspPath": {
                     "type": "string",
                     "default": "",
