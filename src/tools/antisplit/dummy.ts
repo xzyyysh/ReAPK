@@ -90,6 +90,14 @@ export function replaceDummyItems(
         item.name,
         DUMMY_ID_PREFIX + item.id.slice(2),
       );
+      if (item.prevId !== null) {
+        out = replaceDummyName(
+          out,
+          item.type,
+          item.name,
+          DUMMY_ID_PREFIX + item.prevId.slice(2),
+        );
+      }
     }
   }
   return out;

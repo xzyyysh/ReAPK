@@ -17,7 +17,7 @@ import {
   PublicItem,
   mergePublicItems,
   parsePublicXml,
-  renumberConflicts,
+  resolveConflicts,
   writePublicXml,
 } from "./public-item";
 import {
@@ -28,6 +28,7 @@ import {
   replaceDummyItems,
   replaceDummyName,
   replaceUnknownTypeDummies,
+  stripFalseDummyItems,
 } from "./dummy";
 import { decryptApkm, isApkmEncrypted } from "./apkm";
 import { decodeSources } from "./sources";
@@ -88,6 +89,7 @@ function processXmlFile(
     return;
   }
   if (!isManifest) {
+    text = stripFalseDummyItems(text);
     const hasDummyIds = text.indexOf(`${DUMMY_PREFIX}0x`) >= 0;
     text = replaceDummyItems(text, items, dirHash, hasDummyIds);
     text = replaceUnknownTypeDummies(text, items);
@@ -221,7 +223,10 @@ export async function decodeBundleFn(
       items.push(...merged);
     }
     const changedIds = new ChangedIds(null);
-    for (const [oldId, newId] of renumberConflicts(items)) {
+    const resolved = resolveConflicts(items);
+    items.length = 0;
+    items.push(...resolved.items);
+    for (const [oldId, newId] of resolved.changed) {
       changedIds.add(packageNameOf(baseDir), oldId, newId);
     }
     const attrMap = parseAttrsXml(

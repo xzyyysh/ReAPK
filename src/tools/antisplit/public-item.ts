@@ -5,6 +5,7 @@ export const DUMMY_ID_PREFIX = DUMMY_PREFIX + "0x";
 
 export class PublicItem {
   public altName: string | null;
+  public prevId: string | null = null;
 
   constructor(
     public type: string,
@@ -102,33 +103,43 @@ export function mergePublicItems(
   return result;
 }
 
-export function renumberConflicts(items: PublicItem[]): Map<number, number> {
-  const changed = new Map<number, number>();
-  const seen = new Set<string>();
+export function resolveConflicts(items: PublicItem[]): {
+  items: PublicItem[];
+  changed: Map<number, number>;
+} {
+  const seenNames = new Set<string>();
+  const deduped: PublicItem[] = [];
   for (const item of items) {
-    if (item.isDummy) {
-      continue;
-    }
     const key = `${item.type}:${item.name}`;
-    if (!seen.has(key)) {
-      seen.add(key);
+    if (seenNames.has(key)) {
       continue;
     }
-    const typeId = (item.numericId & 0xffff0000) >>> 0;
-    const usedIds = new Set(items.map((x) => x.numericId));
-    let entry = 1;
-    while (entry <= 0xffff && usedIds.has((typeId | entry) >>> 0)) {
-      entry++;
-    }
-    if (entry > 0xffff) {
-      continue;
-    }
-    const oldId = item.numericId;
-    item.id = `0x${((typeId | entry) >>> 0).toString(16).padStart(8, "0")}`;
-    usedIds.add(item.numericId);
-    changed.set(oldId, item.numericId);
+    seenNames.add(key);
+    deduped.push(item);
   }
-  return changed;
+  const changed = new Map<number, number>();
+  const usedIds = new Set<number>();
+  for (const item of deduped) {
+    if (item.isDummy) {
+      usedIds.add(item.numericId);
+      continue;
+    }
+    if (usedIds.has(item.numericId)) {
+      const typeId = (item.numericId & 0xffff0000) >>> 0;
+      let entry = 1;
+      while (entry <= 0xffff && usedIds.has((typeId | entry) >>> 0)) {
+        entry++;
+      }
+      if (entry <= 0xffff) {
+        const oldId = item.numericId;
+        item.prevId = item.id;
+        item.id = `0x${((typeId | entry) >>> 0).toString(16).padStart(8, "0")}`;
+        changed.set(oldId, item.numericId);
+      }
+    }
+    usedIds.add(item.numericId);
+  }
+  return { items: deduped, changed };
 }
 
 export function writePublicXml(
